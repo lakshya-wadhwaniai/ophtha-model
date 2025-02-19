@@ -1,0 +1,103 @@
+checkpoints_dir: /scratchk/ehealth/optha/eyepacs/checkpoints/classification
+seed: 0
+cudnn_deterministic : True
+cudnn_benchmark : False
+disable_debug_apis: True
+
+model:
+    name: efficientnet_v2_m
+    params:
+        weights : DEFAULT
+        num_classes: 1
+
+task_type: binary-classification
+
+data:
+    wandb_run_name : aiims_delhi
+    datasets: ['AIIMS_DELHI_PRE']
+    AIIMS_DELHI:
+        Name: AIIMS_DELHI
+        dataset_params:
+            ROOT: /scratchk/ehealth/optha/aiims_delhi
+            split_version: gradability_512_png_v2_0.6_0.2_0.2
+            fraction: 1
+
+    AIIMS_DELHI_PRE:
+        Name: AIIMS_DELHI_PRE
+        dataset_params:
+            ROOT: /scratchk/ehealth/optha/aiims_delhi
+            # split_version: aiims_prachi_no_labels
+            # split_version: community_images_gradability_raw
+            split_version: aiims_first_batch_gradability_raw_1078_pngonly
+            fraction: 1
+            
+    sampler: False
+    imgsize: [512,512]
+    dataloader_params:
+        train_batch_size : 16
+        val_batch_size : 128
+        test_batch_size : 128
+        shuffle: True
+        num_workers: 4
+        pin_memory: True
+        collate_fn: null
+    augmentations:
+        augs:
+            HorizontalFlip: 
+                p: 0.5
+            VerticalFlip: 
+                p: 0.5
+            ColorJitter:
+                    p: 1.0
+                    brightness: 0.2
+                    contrast: 0.2
+                    saturation: 0.1
+                    hue: 0.1
+        normalization:
+            mean: [0.4177, 0.2840, 0.1996]
+            std: [0.2455, 0.1696, 0.1196]
+
+train:
+    loss: BCEWithLogitsLoss
+    loss_params:
+        reduction: none
+    optimizer: SGD
+    optimizer_params:
+        lr : 0.001
+        momentum : 0.9
+        nesterov : true
+        weight_decay : 0.0005
+    lr_scheduler: ClippedCosineAnnealingLR
+    lr_scheduler_params:
+        T_max: 30
+        min_lr: 0.0001
+    use_amp: False
+    num_epochs : 30
+    resume_checkpoint: 1
+    ft_checkpoint: none
+
+inference:
+    loss: BCEWithLogitsLoss
+    loss_params:
+        reduction: none
+    use_amp: False
+    inference_checkpoint: 7
+    threshold: 0.15051772
+
+wandb:
+    name: null
+    project: DR_Optha_Eyepacs
+
+eval:
+    logging_metrics: 
+        label_metrics: [accuracy_score, precision_score, recall_score, f1_score]
+        score_metrics: [precision_at_90recall, recall_at_90precision]
+        multiclass_label_metrics: []
+        multiclass_score_metrics: []
+        cumulative_metrics: [quadratic_weighted_kappa_score]
+    averaging_metrics: []
+    averaging: simple
+    ckpt_metric: inference_quadratic_weighted_kappa_score
+
+viz: 
+    eval: [plot_roc_curve]

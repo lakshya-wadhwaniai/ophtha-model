@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  ophtha-inference:
+    build:
+      context: ./Diabetic-Retinopathy  # Path to the directory where the Triton Dockerfile is located
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"  # Expose Triton server on port 8000
+    networks:
+      - triton_net
+    shm_size: 2g  # Set shared memory size if needed
+
+  optha-fastapi:
+    build:
+      context: ./Diabetic-Retinopathy/src/app  # Path to the FastAPI Dockerfile directory
+      dockerfile: Dockerfile_clientapp
+    ports:
+      - "8001:8001"  # Expose FastAPI on port 8001
+    networks:
+      - triton_net
+    env_file:
+      - .env  # Load environment variables from your .env file
+    depends_on:
+      - ophtha-inference  # Ensure Triton starts before FastAPI
+
+networks:
+  triton_net:
+    driver: bridge

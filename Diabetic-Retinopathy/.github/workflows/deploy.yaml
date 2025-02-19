@@ -1,0 +1,22 @@
+name: Deploy to TrueFoundry
+
+on:
+  workflow_dispatch
+
+env:
+  TFY_HOST: https://truefoundry.wadhwaniai.org
+  TFY_API_KEY: ${{ secrets.TFY_API_KEY }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install servicefoundry
+        run: pip install servicefoundry
+      - name: Check out repository code
+        uses: actions/checkout@v3
+        with: 
+            ref: deploy_tf
+      - name: Deploy
+        run: |
+          sfy patch-application --application_fqn=production-apso-cp:ophtha-deployment:optha-fastapi --no-wait --patch='{"image": {"type": "build", "build_source": {"type": "local", "project_root_path": "./", "local_build": false}, "build_spec": {"type": "dockerfile", "dockerfile_path": "src/app/Dockerfile_clientapp", "build_context_path": "src/app", "command": "uvicorn app_fastapi:app --port 8001 --host 0.0.0.0"}}}'

@@ -1,0 +1,8 @@
+db.sqlite3
+# .env
+.vscode/*
+venv/*
+.coverage
+.DS_Store
+apps/.DS_Store
+venv/

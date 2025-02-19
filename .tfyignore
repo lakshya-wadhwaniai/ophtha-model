@@ -1,0 +1,5 @@
+*.pt
+/tf/
+.git/
+*.png
+*.JPG

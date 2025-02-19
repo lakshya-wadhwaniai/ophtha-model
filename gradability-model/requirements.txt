@@ -1,0 +1,13 @@
+tfy-mlflow-client==0.0.42
+astunparse==1.6.3
+cffi==1.15.0
+clip==1.0
+cloudpickle==2.2.0
+coral-pytorch==1.4.0
+defusedxml==0.7.1
+dill==0.3.4
+efficientnet-pytorch==0.7.1
+ipython==8.4.0
+kiwisolver==1.4.4
+segment-anything==1.0
+torch==1.12.0

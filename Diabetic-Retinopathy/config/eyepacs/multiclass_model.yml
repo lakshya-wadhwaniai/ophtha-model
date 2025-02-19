@@ -1,0 +1,107 @@
+checkpoints_dir: s3://wiai-aiims-private-data/data/eyepacs/classification
+seed: 0
+cudnn_deterministic : True
+cudnn_benchmark : False
+disable_debug_apis: True
+
+model:
+    name: efficientnet_v2_m_regression_features
+    params:
+        weights : DEFAULT
+        num_classes: 5
+
+task_type: multiclass-classification
+
+data:
+    wandb_run_name : merged_eyepacs_aptos_odir
+    datasets: ['EYEPACS']
+    EYEPACS:
+        Name: EYEPACS
+        dataset_params:
+            ROOT: s3://wiai-aiims-private-data/data/eyepacs
+            split_version: test
+            fraction: 1
+    APTOS:
+        Name: APTOS
+        dataset_params:
+            ROOT: /scratchj/ehealth/optha/aptos
+            split_version: v1_cv2_1024_0.8_0.1_0.1
+            fraction: 1
+    ODIR:
+        Name: ODIR
+        dataset_params:
+            ROOT: /scratchj/ehealth/optha/odir
+            split_version: v1_cv2_1024_0.8_0.1_0.1
+            fraction: 1
+            
+    sampler: False
+    imgsize: [512,512]
+    dataloader_params:
+        train_batch_size : 16
+        val_batch_size : 64
+        test_batch_size : 64
+        shuffle: True
+        num_workers: 4
+        pin_memory: True
+        collate_fn: null
+    augmentations:
+        augs:
+            HorizontalFlip: 
+                p: 0.5
+            VerticalFlip: 
+                p: 0.5
+            ColorJitter:
+                    p: 1.0
+                    brightness: 0.2
+                    contrast: 0.2
+                    saturation: 0.1
+                    hue: 0.1
+        normalization:
+            mean: [0.4177, 0.2840, 0.1996]
+            std: [0.2455, 0.1696, 0.1196]
+
+train:
+    loss: SmoothL1Loss
+    loss_params:
+        reduction: none
+    optimizer: SGD
+    optimizer_params:
+        lr : 0.001
+        momentum : 0.9
+        nesterov : true
+        weight_decay : 0.0005
+    lr_scheduler: ClippedCosineAnnealingLR
+    lr_scheduler_params:
+        T_max: 25
+        min_lr: 0.0001
+    use_amp: False
+    num_epochs : 1
+    resume_checkpoint: 1
+    ft_checkpoint: none
+
+inference:
+    loss: MSELoss
+    loss_params:
+        reduction: none
+    use_amp: False
+    inference_checkpoint: last
+    threshold: [-0.5, 0.5, 1.5, 2.5, 3.5]
+
+wandb:
+    name: null
+    project: DR_Optha_Eyepacs
+
+eval:
+    logging_metrics: 
+        label_metrics: [accuracy_score]
+        score_metrics: []
+        multiclass_label_metrics: [precision_score_classwise, recall_score_classwise]
+        multiclass_score_metrics: []
+        cumulative_metrics: [quadratic_weighted_kappa_score]
+    averaging_metrics: []
+    averaging: simple
+    ckpt_metric: inference_quadratic_weighted_kappa_score
+
+#viz module only for binary model
+viz: 
+    eval: []

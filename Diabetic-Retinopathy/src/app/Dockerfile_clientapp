@@ -1,0 +1,34 @@
+# Use the Triton Inference Server base image
+FROM nvcr.io/nvidia/tritonserver:23.01-py3-sdk
+
+# Install necessary dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && apt-get clean
+
+# Set working directory
+WORKDIR /usr/src/app
+
+# Copy application code into the container
+COPY . ./
+
+# Install dependencies (requirements should be in requirements_app.txt)
+RUN pip install --no-cache-dir --upgrade pip \
+  && pip install --no-cache-dir --timeout=120 -r requirements_app.txt
+
+# Expose the port where the FastAPI app will run
+EXPOSE 8001
+
+# Command to start the FastAPI app with Gunicorn
+# CMD ["gunicorn", "-w", "6", "-k", "uvicorn.workers.UvicornWorker", "app_fastapi_grad_test_cropped:app", "--bind", "0.0.0.0:8001"]
+
+# Create the log directory before running the application
+RUN mkdir -p /var/log/gunicorn
+
+# Ensure the permissions are correct
+RUN chmod -R 777 /var/log/gunicorn
+
+# Your existing CMD to run the server
+# CMD ["gunicorn", "-w", "6", "-k", "uvicorn.workers.UvicornWorker", "app_fastapi_grad_test_cropped:app", "--bind", "0.0.0.0:8001", "--access-logfile", "/var/log/gunicorn/access.log", "--error-logfile", "/var/log/gunicorn/error.log"]
+
+CMD ["uvicorn", "app_fastapi_grad_test_cropped:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]

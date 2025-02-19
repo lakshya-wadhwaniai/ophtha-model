@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+gunicorn
+python-multipart
+opencv-python
+tritonclient[all]
