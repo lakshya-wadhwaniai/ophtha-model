@@ -29,6 +29,6 @@ RUN mkdir -p /var/log/gunicorn
 RUN chmod -R 777 /var/log/gunicorn
 
 # Your existing CMD to run the server
-CMD ["gunicorn", "-w", "6", "-k", "uvicorn.workers.UvicornWorker", "app_fastapi_grad_test_cropped:app", "--bind", "0.0.0.0:8001", "--access-logfile", "/var/log/gunicorn/access.log", "--error-logfile", "/var/log/gunicorn/error.log"]
+CMD ["gunicorn", "-w", "2", "-k", "uvicorn.workers.UvicornWorker", "app_fastapi_grad_test_cropped:app", "--bind", "0.0.0.0:8001", "--access-logfile", "/var/log/gunicorn/access.log", "--error-logfile", "/var/log/gunicorn/error.log"]
 
 # CMD ["uvicorn", "app_fastapi_grad_test_cropped:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
